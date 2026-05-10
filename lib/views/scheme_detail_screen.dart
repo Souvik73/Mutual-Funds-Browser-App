@@ -139,6 +139,30 @@ class _HeaderStrip extends StatelessWidget {
   }
 }
 
+class _ColumnHeader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final style = tt.bodySmall?.copyWith(
+      fontWeight: FontWeight.w600,
+      color: cs.onSurfaceVariant,
+    );
+
+    return Container(
+      color: cs.surfaceContainerLow,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Date', style: style),
+          Text('NAV Value', style: style),
+        ],
+      ),
+    );
+  }
+}
+
 class _NavList extends StatelessWidget {
   const _NavList({required this.detail});
 
@@ -165,14 +189,22 @@ class _NavList extends StatelessWidget {
                     ?.copyWith(color: cs.onSurfaceVariant),
               ),
             )
-          : ListView.separated(
-              itemCount: detail.history.length,
-              separatorBuilder: (_, __) => Divider(
-                height: 1,
-                color: cs.surfaceContainerLow,
-              ),
-              itemBuilder: (context, index) =>
-                  NavHistoryRow(entry: detail.history[index]),
+          : Column(
+              children: [
+                _ColumnHeader(),
+                Divider(height: 1, color: cs.surfaceContainerLow),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: detail.history.length,
+                    separatorBuilder: (_, __) => Divider(
+                      height: 1,
+                      color: cs.surfaceContainerLow,
+                    ),
+                    itemBuilder: (context, index) =>
+                        NavHistoryRow(entry: detail.history[index]),
+                  ),
+                ),
+              ],
             ),
     );
   }
