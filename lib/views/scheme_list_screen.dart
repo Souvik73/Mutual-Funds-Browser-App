@@ -103,6 +103,7 @@ class _SchemeList extends StatefulWidget {
 
 class _SchemeListState extends State<_SchemeList> {
   final _scrollCtrl = ScrollController();
+  bool _showBackToTop = false;
 
   @override
   void initState() {
@@ -117,10 +118,24 @@ class _SchemeListState extends State<_SchemeList> {
   }
 
   void _onScroll() {
-    if (_scrollCtrl.position.pixels >=
-        _scrollCtrl.position.maxScrollExtent - 200) {
+    final pixels = _scrollCtrl.position.pixels;
+
+    final shouldShow = pixels > 300;
+    if (shouldShow != _showBackToTop) {
+      setState(() => _showBackToTop = shouldShow);
+    }
+
+    if (pixels >= _scrollCtrl.position.maxScrollExtent - 200) {
       context.read<SchemeListController>().loadMore();
     }
+  }
+
+  void _scrollToTop() {
+    _scrollCtrl.animateTo(
+      0,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -135,66 +150,86 @@ class _SchemeListState extends State<_SchemeList> {
       );
     }
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: ctrl.loading
-          ? const SchemeListSkeleton()
-          : ctrl.filteredSchemes.isEmpty
-              ? Center(
-                  child: Text(
-                    'No schemes found',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(color: cs.onSurfaceVariant),
-                  ),
-                )
-              : Scrollbar(
-                  controller: _scrollCtrl,
-                  thumbVisibility: true,
-                  child: ListView.separated(
-                    controller: _scrollCtrl,
-                    itemCount: ctrl.displayedSchemes.length + (ctrl.hasMore ? 1 : 0),
-                    separatorBuilder: (_, index) {
-                      // suppress the divider immediately before the loader row
-                      if (ctrl.hasMore && index == ctrl.displayedSchemes.length - 1) {
-                        return const SizedBox.shrink();
-                      }
-                      return Divider(
-                        height: 1,
-                        indent: 72,
-                        color: cs.surfaceContainerLow,
-                      );
-                    },
-                    itemBuilder: (context, index) {
-                      if (ctrl.hasMore && index == ctrl.displayedSchemes.length) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Center(
-                            child: SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: cs.primary,
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                      final scheme = ctrl.displayedSchemes[index];
-                      return SchemeListTile(
-                        scheme: scheme,
-                        onTap: () {}, // TODO: context.go('/scheme/${scheme.schemeCode}')
-                      );
-                    },
-                  ),
-                ),
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: ctrl.loading
+                ? const SchemeListSkeleton()
+                : ctrl.filteredSchemes.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No schemes found',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge
+                              ?.copyWith(color: cs.onSurfaceVariant),
+                        ),
+                      )
+                    : Scrollbar(
+                        controller: _scrollCtrl,
+                        thumbVisibility: true,
+                        child: ListView.separated(
+                          controller: _scrollCtrl,
+                          itemCount: ctrl.displayedSchemes.length +
+                              (ctrl.hasMore ? 1 : 0),
+                          separatorBuilder: (_, index) {
+                            if (ctrl.hasMore &&
+                                index == ctrl.displayedSchemes.length - 1) {
+                              return const SizedBox.shrink();
+                            }
+                            return Divider(
+                              height: 1,
+                              indent: 72,
+                              color: cs.surfaceContainerLow,
+                            );
+                          },
+                          itemBuilder: (context, index) {
+                            if (ctrl.hasMore &&
+                                index == ctrl.displayedSchemes.length) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                child: Center(
+                                  child: SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: cs.primary,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            final scheme = ctrl.displayedSchemes[index];
+                            return SchemeListTile(
+                              scheme: scheme,
+                              onTap: () {}, // TODO: context.go('/scheme/${scheme.schemeCode}')
+                            );
+                          },
+                        ),
+                      ),
+          ),
+        ),
+        if (_showBackToTop && !ctrl.loading && ctrl.filteredSchemes.isNotEmpty)
+          Positioned(
+            right: 24,
+            bottom: 24,
+            child: FloatingActionButton.small(
+              onPressed: _scrollToTop,
+              backgroundColor: cs.primary,
+              foregroundColor: cs.onPrimary,
+              child: const Icon(Icons.keyboard_arrow_up_rounded),
+            ),
+          ),
+      ],
     );
   }
 }
