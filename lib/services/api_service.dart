@@ -41,8 +41,14 @@ class ApiService {
   }
 
   Future<SchemeDetail> getSchemeDetail(int schemeCode) async {
-    // TODO: implement
-    throw UnimplementedError();
+    try {
+      final res = await _dio.get('/mf/$schemeCode', options: _detailOpts);
+      return SchemeDetail.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      _handleDioError(e);
+    } on FormatException {
+      throw const ParseException('Failed to parse scheme detail');
+    }
   }
 
   Never _handleDioError(DioException e) {

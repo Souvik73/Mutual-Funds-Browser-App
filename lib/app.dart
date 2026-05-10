@@ -26,7 +26,7 @@ class App extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'Mutual Fund Browser',
-        routerConfig: AppRouter(authController).router,
+        routerConfig: AppRouter(authController, apiService).router,
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),

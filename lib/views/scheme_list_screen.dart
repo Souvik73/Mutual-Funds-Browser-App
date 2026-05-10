@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/scheme_list_controller.dart';
@@ -243,7 +244,7 @@ class _SchemeListState extends State<_SchemeList> {
                             final scheme = ctrl.displayedSchemes[index];
                             return SchemeListTile(
                               scheme: scheme,
-                              onTap: () {}, // TODO: context.go('/scheme/${scheme.schemeCode}')
+                              onTap: () => context.push('/scheme/${scheme.schemeCode}'),
                             );
                           },
                         ),

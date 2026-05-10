@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
+import '../controllers/scheme_detail_controller.dart';
+import '../services/api_service.dart';
 import '../views/login_screen.dart';
 import '../views/scheme_list_screen.dart';
 import '../views/scheme_detail_screen.dart';
 
 class AppRouter {
-  AppRouter(this._authController);
+  AppRouter(this._authController, this._apiService);
 
   final AuthController _authController;
+  final ApiService _apiService;
 
   late final GoRouter router = GoRouter(
     initialLocation: '/login',
@@ -39,7 +43,10 @@ class AppRouter {
           path: '/scheme/:code',
           builder: (context, state) {
             final code = int.parse(state.pathParameters['code']!);
-            return SchemeDetailScreen(schemeCode: code);
+            return ChangeNotifierProvider(
+              create: (_) => SchemeDetailController(_apiService),
+              child: SchemeDetailScreen(schemeCode: code),
+            );
           },
         ),
       ];
