@@ -17,7 +17,7 @@ class DioClient {
       DioCacheInterceptor(
         options: CacheOptions(
           store: store,
-          policy: CachePolicy.request,
+          policy: CachePolicy.refreshForceCache,
           hitCacheOnErrorExcept: [401, 403],
         ),
       ),

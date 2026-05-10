@@ -13,16 +13,19 @@ class ApiService {
 
   static const _noErrorFallback = [401, 403];
 
+  // refreshForceCache: always fetch from network AND always write to disk regardless
+  // of response headers. mfapi.in sends no cache headers, so CachePolicy.request
+  // never stores anything — hitCacheOnErrorExcept would always find an empty store.
   Options get _listOpts => CacheOptions(
         store: _store,
-        policy: CachePolicy.request,
+        policy: CachePolicy.refreshForceCache,
         maxStale: const Duration(hours: 1),
         hitCacheOnErrorExcept: _noErrorFallback,
       ).toOptions();
 
   Options get _detailOpts => CacheOptions(
         store: _store,
-        policy: CachePolicy.request,
+        policy: CachePolicy.refreshForceCache,
         maxStale: const Duration(minutes: 15),
         hitCacheOnErrorExcept: _noErrorFallback,
       ).toOptions();
