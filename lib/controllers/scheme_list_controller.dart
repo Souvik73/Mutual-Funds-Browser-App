@@ -53,7 +53,9 @@ class SchemeListController extends ChangeNotifier {
     } else {
       final q = query.toLowerCase();
       filteredSchemes = _allSchemes
-          .where((s) => s.schemeName.toLowerCase().contains(q))
+          .where((s) =>
+              s.schemeName.toLowerCase().contains(q) ||
+              s.schemeCode.toString().contains(q))
           .toList();
     }
     notifyListeners();

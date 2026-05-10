@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/scheme_list_controller.dart';
+import '../utils/debouncer.dart';
 import 'widgets/error_view.dart';
 import 'widgets/scheme_list_skeleton.dart';
 import 'widgets/scheme_list_tile.dart';
@@ -58,8 +59,23 @@ class _SchemeListScreenState extends State<SchemeListScreen> {
   }
 }
 
-class _SearchBar extends StatelessWidget {
+class _SearchBar extends StatefulWidget {
   const _SearchBar();
+
+  @override
+  State<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<_SearchBar> {
+  final _ctrl = TextEditingController();
+  final _debouncer = Debouncer();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    _debouncer.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,10 +84,27 @@ class _SearchBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: TextField(
+        controller: _ctrl,
+        onChanged: (value) {
+          setState(() {});
+          _debouncer.run(
+            () => context.read<SchemeListController>().filter(value),
+          );
+        },
         decoration: InputDecoration(
-          hintText: 'Search schemes...',
+          hintText: 'Search by name or code...',
           hintStyle: TextStyle(color: cs.onSurfaceVariant),
           prefixIcon: Icon(Icons.search_rounded, color: cs.onSurfaceVariant),
+          suffixIcon: _ctrl.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded),
+                  onPressed: () {
+                    _ctrl.clear();
+                    setState(() {});
+                    context.read<SchemeListController>().filter('');
+                  },
+                )
+              : null,
           filled: true,
           fillColor: cs.surface,
           contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -87,7 +120,6 @@ class _SearchBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide(color: cs.primary, width: 1.5),
           ),
-          // TODO: wire onChanged → SchemeListController.filter()
         ),
       ),
     );
