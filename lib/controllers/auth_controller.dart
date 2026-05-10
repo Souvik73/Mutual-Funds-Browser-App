@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../config/app_config.dart';
 import '../services/auth_storage.dart';
 
 class AuthController extends ChangeNotifier {
@@ -6,8 +7,8 @@ class AuthController extends ChangeNotifier {
 
   final AuthStorage _storage;
 
-  static const _validEmail = 'calathea.tester@finroles.com';
-  static const _validPassword = 'Calathea#1234';
+  static const _validEmail = AppConfig.authEmail;
+  static const _validPassword = AppConfig.authPassword;
 
   bool _isAuthenticated = false;
   bool get isAuthenticated => _isAuthenticated;
