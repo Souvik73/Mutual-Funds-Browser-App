@@ -94,8 +94,34 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-class _SchemeList extends StatelessWidget {
+class _SchemeList extends StatefulWidget {
   const _SchemeList();
+
+  @override
+  State<_SchemeList> createState() => _SchemeListState();
+}
+
+class _SchemeListState extends State<_SchemeList> {
+  final _scrollCtrl = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollCtrl.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollCtrl.position.pixels >=
+        _scrollCtrl.position.maxScrollExtent - 200) {
+      context.read<SchemeListController>().loadMore();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,20 +154,46 @@ class _SchemeList extends StatelessWidget {
                         ?.copyWith(color: cs.onSurfaceVariant),
                   ),
                 )
-              : ListView.separated(
-                  itemCount: ctrl.filteredSchemes.length,
-                  separatorBuilder: (_, __) => Divider(
-                    height: 1,
-                    indent: 72,
-                    color: cs.surfaceContainerLow,
+              : Scrollbar(
+                  controller: _scrollCtrl,
+                  thumbVisibility: true,
+                  child: ListView.separated(
+                    controller: _scrollCtrl,
+                    itemCount: ctrl.displayedSchemes.length + (ctrl.hasMore ? 1 : 0),
+                    separatorBuilder: (_, index) {
+                      // suppress the divider immediately before the loader row
+                      if (ctrl.hasMore && index == ctrl.displayedSchemes.length - 1) {
+                        return const SizedBox.shrink();
+                      }
+                      return Divider(
+                        height: 1,
+                        indent: 72,
+                        color: cs.surfaceContainerLow,
+                      );
+                    },
+                    itemBuilder: (context, index) {
+                      if (ctrl.hasMore && index == ctrl.displayedSchemes.length) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: cs.primary,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      final scheme = ctrl.displayedSchemes[index];
+                      return SchemeListTile(
+                        scheme: scheme,
+                        onTap: () {}, // TODO: context.go('/scheme/${scheme.schemeCode}')
+                      );
+                    },
                   ),
-                  itemBuilder: (context, index) {
-                    final scheme = ctrl.filteredSchemes[index];
-                    return SchemeListTile(
-                      scheme: scheme,
-                      onTap: () {}, // TODO: context.go('/scheme/${scheme.schemeCode}')
-                    );
-                  },
                 ),
     );
   }

@@ -8,10 +8,18 @@ class SchemeListController extends ChangeNotifier {
 
   final ApiService _api;
 
+  static const _pageSize = 50;
+
   List<Scheme> _allSchemes = [];
   List<Scheme> filteredSchemes = [];
+  int _displayCount = _pageSize;
   bool loading = false;
   String? errorMessage;
+
+  List<Scheme> get displayedSchemes =>
+      filteredSchemes.take(_displayCount).toList();
+
+  bool get hasMore => _displayCount < filteredSchemes.length;
 
   Future<void> fetch() async {
     loading = true;
@@ -21,6 +29,7 @@ class SchemeListController extends ChangeNotifier {
     try {
       _allSchemes = await _api.getSchemes();
       filteredSchemes = List.of(_allSchemes);
+      _displayCount = _pageSize;
     } on AppException catch (e) {
       errorMessage = e.message;
     } catch (_) {
@@ -31,7 +40,14 @@ class SchemeListController extends ChangeNotifier {
     }
   }
 
+  void loadMore() {
+    if (!hasMore) return;
+    _displayCount = (_displayCount + _pageSize).clamp(0, filteredSchemes.length);
+    notifyListeners();
+  }
+
   void filter(String query) {
+    _displayCount = _pageSize;
     if (query.isEmpty) {
       filteredSchemes = List.of(_allSchemes);
     } else {
