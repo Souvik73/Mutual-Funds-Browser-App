@@ -8,7 +8,31 @@ class ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement
-    return const Placeholder();
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.wifi_off_rounded, size: 52, color: cs.onSurfaceVariant),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Retry'),
+              onPressed: onRetry,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/scheme.dart';
 import '../services/api_service.dart';
+import '../errors/api_exception.dart';
 
 class SchemeListController extends ChangeNotifier {
   SchemeListController(this._api);
@@ -13,10 +14,32 @@ class SchemeListController extends ChangeNotifier {
   String? errorMessage;
 
   Future<void> fetch() async {
-    // TODO: fetch all schemes, populate _allSchemes + filteredSchemes
+    loading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      _allSchemes = await _api.getSchemes();
+      filteredSchemes = List.of(_allSchemes);
+    } on AppException catch (e) {
+      errorMessage = e.message;
+    } catch (_) {
+      errorMessage = 'Something went wrong';
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
   }
 
   void filter(String query) {
-    // TODO: filter _allSchemes by query, update filteredSchemes, notify
+    if (query.isEmpty) {
+      filteredSchemes = List.of(_allSchemes);
+    } else {
+      final q = query.toLowerCase();
+      filteredSchemes = _allSchemes
+          .where((s) => s.schemeName.toLowerCase().contains(q))
+          .toList();
+    }
+    notifyListeners();
   }
 }

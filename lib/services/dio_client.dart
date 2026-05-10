@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
+import 'package:dio_cache_interceptor_hive_store/dio_cache_interceptor_hive_store.dart';
 
 class DioClient {
   DioClient._();
 
-  static Dio create() {
+  static Dio create(HiveCacheStore store) {
     final dio = Dio(
       BaseOptions(
         baseUrl: 'https://api.mfapi.in',
@@ -11,7 +13,15 @@ class DioClient {
         receiveTimeout: const Duration(seconds: 15),
       ),
     );
-    // TODO: add DioCacheInterceptor with HiveCacheStore
+    dio.interceptors.add(
+      DioCacheInterceptor(
+        options: CacheOptions(
+          store: store,
+          policy: CachePolicy.request,
+          hitCacheOnErrorExcept: [401, 403],
+        ),
+      ),
+    );
     return dio;
   }
 }

@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
-import '../models/scheme.dart';
+import '../controllers/scheme_list_controller.dart';
+import 'widgets/error_view.dart';
+import 'widgets/scheme_list_skeleton.dart';
 import 'widgets/scheme_list_tile.dart';
 
-class SchemeListScreen extends StatelessWidget {
+class SchemeListScreen extends StatefulWidget {
   const SchemeListScreen({super.key});
 
-  static const _mockSchemes = [
-    Scheme(schemeCode: 100033, schemeName: 'Aditya Birla Sun Life Frontline Equity Fund - Growth'),
-    Scheme(schemeCode: 119598, schemeName: 'HDFC Mid-Cap Opportunities Fund - Regular Growth'),
-    Scheme(schemeCode: 120503, schemeName: 'SBI Bluechip Fund - Regular Growth'),
-    Scheme(schemeCode: 118989, schemeName: 'Axis Long Term Equity Fund - Growth'),
-    Scheme(schemeCode: 112090, schemeName: 'Mirae Asset Large Cap Fund - Regular Growth'),
-    Scheme(schemeCode: 125354, schemeName: 'Nippon India Small Cap Fund - Growth'),
-    Scheme(schemeCode: 100425, schemeName: 'Franklin India Prima Fund - Growth'),
-    Scheme(schemeCode: 130503, schemeName: 'Parag Parikh Flexi Cap Fund - Regular Growth'),
-    Scheme(schemeCode: 119247, schemeName: 'Kotak Emerging Equity Fund - Regular Growth'),
-    Scheme(schemeCode: 135781, schemeName: 'UTI Nifty 50 Index Fund - Regular Growth'),
-  ];
+  @override
+  State<SchemeListScreen> createState() => _SchemeListScreenState();
+}
+
+class _SchemeListScreenState extends State<SchemeListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<SchemeListController>().fetch(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,10 +48,10 @@ class SchemeListScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
+      body: const Column(
         children: [
           _SearchBar(),
-          const Expanded(child: _SchemeList()),
+          Expanded(child: _SchemeList()),
         ],
       ),
     );
@@ -57,6 +59,8 @@ class SchemeListScreen extends StatelessWidget {
 }
 
 class _SearchBar extends StatelessWidget {
+  const _SearchBar();
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -95,7 +99,15 @@ class _SchemeList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ctrl = context.watch<SchemeListController>();
     final cs = Theme.of(context).colorScheme;
+
+    if (ctrl.errorMessage != null) {
+      return ErrorView(
+        message: ctrl.errorMessage!,
+        onRetry: () => context.read<SchemeListController>().fetch(),
+      );
+    }
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 16),
@@ -104,21 +116,33 @@ class _SchemeList extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       clipBehavior: Clip.antiAlias,
-      child: ListView.separated(
-        itemCount: SchemeListScreen._mockSchemes.length,
-        separatorBuilder: (_, __) => Divider(
-          height: 1,
-          indent: 72,
-          color: cs.surfaceContainerLow,
-        ),
-        itemBuilder: (context, index) {
-          final scheme = SchemeListScreen._mockSchemes[index];
-          return SchemeListTile(
-            scheme: scheme,
-            onTap: () {}, // TODO: context.go('/scheme/${scheme.schemeCode}')
-          );
-        },
-      ),
+      child: ctrl.loading
+          ? const SchemeListSkeleton()
+          : ctrl.filteredSchemes.isEmpty
+              ? Center(
+                  child: Text(
+                    'No schemes found',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                )
+              : ListView.separated(
+                  itemCount: ctrl.filteredSchemes.length,
+                  separatorBuilder: (_, __) => Divider(
+                    height: 1,
+                    indent: 72,
+                    color: cs.surfaceContainerLow,
+                  ),
+                  itemBuilder: (context, index) {
+                    final scheme = ctrl.filteredSchemes[index];
+                    return SchemeListTile(
+                      scheme: scheme,
+                      onTap: () {}, // TODO: context.go('/scheme/${scheme.schemeCode}')
+                    );
+                  },
+                ),
     );
   }
 }
