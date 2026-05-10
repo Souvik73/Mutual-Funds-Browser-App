@@ -22,9 +22,22 @@ class SchemeListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
+      backgroundColor: cs.surfaceContainerLow,
       appBar: AppBar(
-        title: const Text('Mutual Funds'),
+        backgroundColor: cs.primary,
+        foregroundColor: cs.onPrimary,
+        elevation: 0,
+        title: Text(
+          'Mutual Funds',
+          style: TextStyle(
+            color: cs.onPrimary,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout_rounded),
@@ -46,13 +59,30 @@ class SchemeListScreen extends StatelessWidget {
 class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: TextField(
         decoration: InputDecoration(
           hintText: 'Search schemes...',
-          prefixIcon: const Icon(Icons.search_rounded),
-          border: const OutlineInputBorder(),
+          hintStyle: TextStyle(color: cs.onSurfaceVariant),
+          prefixIcon: Icon(Icons.search_rounded, color: cs.onSurfaceVariant),
+          filled: true,
+          fillColor: cs.surface,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: cs.primary, width: 1.5),
+          ),
           // TODO: wire onChanged → SchemeListController.filter()
         ),
       ),
@@ -65,16 +95,30 @@ class _SchemeList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      itemCount: SchemeListScreen._mockSchemes.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final scheme = SchemeListScreen._mockSchemes[index];
-        return SchemeListTile(
-          scheme: scheme,
-          onTap: () {}, // TODO: context.go('/scheme/${scheme.schemeCode}')
-        );
-      },
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: ListView.separated(
+        itemCount: SchemeListScreen._mockSchemes.length,
+        separatorBuilder: (_, __) => Divider(
+          height: 1,
+          indent: 72,
+          color: cs.surfaceContainerLow,
+        ),
+        itemBuilder: (context, index) {
+          final scheme = SchemeListScreen._mockSchemes[index];
+          return SchemeListTile(
+            scheme: scheme,
+            onTap: () {}, // TODO: context.go('/scheme/${scheme.schemeCode}')
+          );
+        },
+      ),
     );
   }
 }

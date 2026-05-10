@@ -13,17 +13,34 @@ class SchemeListTile extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      leading: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: cs.primaryContainer,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          scheme.schemeName[0],
+          style: TextStyle(
+            color: cs.onPrimaryContainer,
+            fontWeight: FontWeight.w700,
+            fontSize: 17,
+          ),
+        ),
+      ),
       title: Text(
         scheme.schemeName,
-        style: tt.bodyLarge,
+        style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Padding(
-        padding: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.only(top: 3),
         child: Text(
-          'Code: ${scheme.schemeCode}',
+          'Code  ${scheme.schemeCode}',
           style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
         ),
       ),
